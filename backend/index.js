@@ -92,26 +92,13 @@ app.post('/api/products', (req,res, next) => {
     });
 });
 
-const unknownEndpoint = (req, res ) => {
-  res.status(404).json({ error: 'unknown endpoint' });
-};
+const unknownEndpoint = require('./middleware/notFound');
 app.use(unknownEndpoint);
 
-const errorHandler = (error, req, res, next) => {
-  console.error(error.message);
-
-  if (error.name === 'CastError') {
-    return res.status(400).send({ error: 'malformatted id' });
-  } else if (error.name === 'ValidationError') {
-    return res.status(400).json({ error: error.message });
-  }else if (error.code === 11000) {
-    return res.status(409).json({ error: 'duplicate barcode' });
-  }
-
-  res.status(500).json({ error: 'internal server error' });
-
-};
+const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
+
+
 const PORT = process.env.PORT || 4001;
 mongoose.connect(URL)
   .then(() => {
