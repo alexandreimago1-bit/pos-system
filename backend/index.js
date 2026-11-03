@@ -3,36 +3,115 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
 
+
 const Product = require('./models/Product');
 const app = express();
+app.use(express.json());
 
 const URL = process.env.MONGODB_URI;
 
-app.get('/api/products', (req,res) => {
+
+
+app.get('/api/products', (req,res, next) => {
   Product.find({})
     .then(products => {
       res.json(products);
     })
     .catch(error => {
-      console.error('error fetching products', error.message);
-      res.status(500).json({ error: 'Internal Server Error' });
+      next(error);
     });
 });
 
-app.get('/api/products/:id', (req,res) => {
+app.get('/api/products/:id', (req,res, next) => {
   Product
     .findById(req.params.id)
     .then(product => {
       if (product) {
         res.json(product);
       }else {
-        res.status(404).end();
+        res.status(404).json({ error: 'product not found' });
       }
     })
     .catch( error => {
-      console.error(`error fetching ${req.params.id}`, error.message);
+      next(error);
     });
 });
+
+app.put('/api/products/:id', (req, res, next) => {
+  const { name, barcode, priceInCentavos } = req.body;
+
+  Product.findById(req.params.id)
+    .then(product => {
+      if (!product) {
+        return res.status(404).json({ error: 'product not found' });
+      }
+
+      product.name = name;
+      product.barcode = barcode;
+      product.priceInCentavos = priceInCentavos;
+
+      return product.save().then(updatedProduct => {
+        res.json(updatedProduct);
+      });
+    })
+    .catch(error => next(error));
+});
+
+app.delete('/api/products/:id',(req, res, next) => {
+  Product.findById(req.params.id)
+    .then((product) => {
+      if (!product) {
+        return res.status(404).json({ error: 'product not found' });
+      } 
+
+      product.isActive = false;
+      
+      return product.save().then(() => {
+        res.status(204).end();
+      });
+    })
+    .catch(error => next(error));
+});
+
+app.post('/api/products', (req,res, next) => {
+  const body = req.body;
+
+  const product = new Product({
+    name: body.name,
+    barcode: body.barcode, 
+    priceInCentavos: body.priceInCentavos,
+  });
+
+  product
+    .save()
+    .then(savedProduct => {
+      res.status(201).json(savedProduct);
+    })
+    .catch(error => {
+      next(error);
+    });
+});
+
+const unknownEndpoint = (req, res ) => {
+  res.status(404).json({ error: 'unknown endpoint' });
+};
+app.use(unknownEndpoint);
+
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' });
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message });
+  }else if (error.code === 11000) {
+    return res.status(409).json({ error: 'duplicate barcode' });
+  }
+
+  res.status(500).json({ error: 'internal server error' });
+
+};
+app.use(errorHandler);
 const PORT = process.env.PORT || 4001;
 mongoose.connect(URL)
   .then(() => {

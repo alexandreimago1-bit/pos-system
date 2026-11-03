@@ -1,0 +1,61 @@
+@baseUrl = http://localhost:4001
+
+### 11. PUT Valid product (expect 200)
+PUT {{baseUrl}}/api/products/6ae93aa8a78268b15775ed4d
+Content-Type: application/json
+
+{
+  "name": "Lucky Me Pancit Canton (Updated)",
+  "barcode": "4800016644801",
+  "priceInCentavos": 1600
+}
+
+### 12. PUT negative price (expect 400)
+PUT {{baseUrl}}/api/products/6ae93aa8a78268b15775ed4d
+Content-Type: application/json
+
+{
+  "name": "Lucky Me Pancit Canton (Updated)",
+  "barcode": "4800016644801",
+  "priceInCentavos": -1600
+}
+
+### 13. PUT decimal price (expect 400, integer rule)
+PUT {{baseUrl}}/api/products/6ae93aa8a78268b15775ed4d
+Content-Type: application/json
+
+{
+  "name": "Lucky Me Pancit Canton (Updated)",
+  "barcode": "4800016644801",
+  "priceInCentavos": 16.5
+}
+
+### 14 PUT changing the barcode to an existing one (expect 409, "duplicate barcode")
+PUT {{baseUrl}}/api/products/6ae93aa8a78268b15775ed4d
+Content-Type: application/json
+
+{
+  "name": "Lucky Me Pancit Canton (Updated)",
+  "barcode": "TEST-COFFEE-001",
+  "priceInCentavos": 1600
+}
+
+#### 15. PUT with id that doesn't exist (expect 404, "product not found")
+PUT {{baseUrl}}/api/products/507f1f77bcf86cd799439011
+Content-Type: application/json
+
+{
+  "name": "Lucky Me Pancit Canton (Updated)",
+  "barcode": "4800016644801",
+  "priceInCentavos": 1600
+}
+
+#### 16. PUT with malformed id (expect 400, "malformatted id")
+PUT {{baseUrl}}/api/products/abc
+Content-Type: application/json
+
+{
+  "name": "Lucky Me Pancit Canton (Updated)",
+  "barcode": "4800016644801",
+  "priceInCentavos": 1600
+}

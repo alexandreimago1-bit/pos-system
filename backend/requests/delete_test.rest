@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:4001
+
+### 1. Create a product to archive (setup, expect 201)
+# @name toArchive
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Archive Test",
+  "barcode": "archive-001",
+  "priceInCentavos": 1000,
+  "stock": 5
+}
+
+### 2. DELETE (archive) it (expect 204, empty body)
+DELETE {{baseUrl}}/api/products/{{toArchive.response.body.$._id}}
+
+### 3. GET it by id (expect 200, isActive false, proves it was archived, not deleted)
+GET {{baseUrl}}/api/products/{{toArchive.response.body.$._id}}
+
+### 4. DELETE it again (expect 204, idempotent)
+DELETE {{baseUrl}}/api/products/{{toArchive.response.body.$._id}}
+
+### 5. DELETE valid-format id that doesn't exist (expect 404, no "headers already sent" in terminal)
+DELETE {{baseUrl}}/api/products/507f1f77bcf86cd799439011
+
+### 6. DELETE malformed id (expect 400)
+DELETE {{baseUrl}}/api/products/abc
+
+### 7. GET all (the archived product should still be in the list)
+GET {{baseUrl}}/api/products
