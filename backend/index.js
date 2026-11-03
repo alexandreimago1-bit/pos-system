@@ -1,6 +1,6 @@
-require('dotenv').config();
+const env = require('./config/env');
 
-const mongoose = require('mongoose');
+
 const express = require('express');
 
 
@@ -8,8 +8,9 @@ const Product = require('./models/Product');
 const app = express();
 app.use(express.json());
 
-const URL = process.env.MONGODB_URI;
 
+
+const connectDB = require('./config/db');
 
 
 app.get('/api/products', (req,res, next) => {
@@ -80,6 +81,7 @@ app.post('/api/products', (req,res, next) => {
     name: body.name,
     barcode: body.barcode, 
     priceInCentavos: body.priceInCentavos,
+    stock: body.stock,
   });
 
   product
@@ -99,8 +101,8 @@ const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
 
-const PORT = process.env.PORT || 4001;
-mongoose.connect(URL)
+const PORT = env.PORT;
+connectDB()
   .then(() => {
     console.log('connected to MongoDB');
     app.listen(PORT, () => {
