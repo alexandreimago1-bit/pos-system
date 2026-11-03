@@ -6,8 +6,8 @@ POST {{baseUrl}}/api/products
 Content-Type: application/json
 
 {
-  "name": "Archive Test",
-  "barcode": "archive-001",
+  "name": "Archive Test 2",
+  "barcode": "archive-002",
   "priceInCentavos": 1000,
   "stock": 5
 }

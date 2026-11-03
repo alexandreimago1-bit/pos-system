@@ -18,7 +18,7 @@ Content-Type: application/json
 
 {
   "name": "Lucky Me Pancit Canton",
-  "barcode": "4800016644801",
+  "barcode": "TEST--BARCODE--2",
   "priceInCentavos": 1500,
   "stock": 50
 }
