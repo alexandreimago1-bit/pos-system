@@ -1,26 +1,15 @@
 const env = require('./config/env');
 
-
 const express = require('express');
-
 
 const app = express();
 app.use(express.json());
 
-
-
 const connectDB = require('./config/db');
-const productController = require('./controllers/productController');
 
-app.get('/api/products', productController.getAllController);
 
-app.get('/api/products/:id', productController.getByIdController);
-
-app.put('/api/products/:id', productController.putController);
-
-app.delete('/api/products/:id', productController.deleteController);
-
-app.post('/api/products', productController.postController);
+const productRoutes = require('./routes/productRoutes');
+app.use('/api/products', productRoutes);
 
 const unknownEndpoint = require('./middleware/notFound');
 app.use(unknownEndpoint);
