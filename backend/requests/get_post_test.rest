@@ -4,7 +4,7 @@
 GET {{baseUrl}}/api/products
 
 ### 2. GET one product (paste a real _id from request 1, expect 200)
-GET {{baseUrl}}/api/products/6aea78933082a6f392a4a1fe
+GET {{baseUrl}}/api/products/6aead79cd10eea37adff995f
 
 ### 3. GET malformed id (expect 400, "malformatted id")
 GET {{baseUrl}}/api/products/abc

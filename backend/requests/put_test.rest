@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:4001
 
 ### 11. PUT Valid product (expect 200)
-PUT {{baseUrl}}/api/products/6aea78933082a6f392a4a1fe
+PUT {{baseUrl}}/api/products/6aead79cd10eea37adff995f
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### 12. PUT negative price (expect 400)
-PUT {{baseUrl}}/api/products/6aea78933082a6f392a4a1fe
+PUT {{baseUrl}}/api/products/6aead79cd10eea37adff995f
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 }
 
 ### 13. PUT decimal price (expect 400, integer rule)
-PUT {{baseUrl}}/api/products/6aea78933082a6f392a4a1fe
+PUT {{baseUrl}}/api/products/6aead79cd10eea37adff995f
 Content-Type: application/json
 
 {
@@ -31,7 +31,7 @@ Content-Type: application/json
 }
 
 ### 14 PUT changing the barcode to an existing one (expect 409, "duplicate barcode")
-PUT {{baseUrl}}/api/products/6aea78933082a6f392a4a1fe
+PUT {{baseUrl}}/api/products/6aead79cd10eea37adff995f
 Content-Type: application/json
 
 {

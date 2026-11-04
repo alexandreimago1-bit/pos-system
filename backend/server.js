@@ -1,22 +1,8 @@
 const env = require('./config/env');
 
-const express = require('express');
-
-const app = express();
-app.use(express.json());
+const app = require('./app');
 
 const connectDB = require('./config/db');
-
-
-const productRoutes = require('./routes/productRoutes');
-app.use('/api/products', productRoutes);
-
-const unknownEndpoint = require('./middleware/notFound');
-app.use(unknownEndpoint);
-
-const errorHandler = require('./middleware/errorHandler');
-app.use(errorHandler);
-
 
 const PORT = env.PORT;
 connectDB()
