@@ -19,7 +19,7 @@ const nonExistingId = async () => {
   const product = new Product({
     name: 'willBeDeleted',
     barcode: 'willBeDeleted',
-    priceInCentavos: 'https://willbe.deleted/smth',
+    priceInCentavos: 1000,
     stock: 12,
   });
   await product.save();
