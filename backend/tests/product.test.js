@@ -37,7 +37,7 @@ beforeEach(async () => {
   await Product.deleteMany({});
   await Product.insertMany(initialProducts);
 });
-
+// GET PRODUCTS TEST
 test('all products are returned', async () => {
   const response = await api.get('/api/products')
     .expect(200)
@@ -45,6 +45,47 @@ test('all products are returned', async () => {
 
   assert.strictEqual(response.body.length, initialProducts.length);
   
+});
+
+// POST TESTS
+test('a valid product can be added', async () => {
+  const newProduct = {
+    name: 'TEST-POST-PRODUCT-1',
+    barcode: 'TEST-POST-BARCODE-1',
+    priceInCentavos: 1250,
+    stock: 13,
+  };
+  await api
+    .post('/api/products')
+    .send(newProduct)
+    .expect(201)
+    .expect('Content-type',/application\/json/);
+
+  const productsInDB = await Product.find({});
+  const productsAtEnd = productsInDB.map(product => product.toJSON());
+
+  assert.strictEqual(productsAtEnd.length, initialProducts.length + 1);
+
+  const names = productsAtEnd.map(product => product.name);
+  assert(names.includes('TEST-POST-PRODUCT-1'));
+  
+});
+
+test('posting a product with the same barcode returns 409', async() => {
+  const newProduct = {
+    name: 'TEST-POST-PRODUCT-2',
+    barcode: 'TEST-BARCODE-1',
+    priceInCentavos: 1550,
+    stock: 18,
+  };
+
+  await api
+    .post('/api/products')
+    .send(newProduct)
+    .expect(409);
+  
+  const response = await api.get('/api/products');
+  assert.strictEqual(response.body.length, initialProducts.length);
 });
 
 after(async () => {
