@@ -71,9 +71,6 @@ describe('when there are initially some products saved', () => {
     });
   });
 
-
-
-
   describe('creating new products', () => {
 
     describe('when successful', () => {
@@ -117,6 +114,31 @@ describe('when there are initially some products saved', () => {
         assert.strictEqual(response.body.length, helper.initialProducts.length);
       });
     });
+  });
+
+  describe('updating an existing product', () => {
+    test('successfully updating an existing product price returns 200 OK but ignores stocks', async () => {
+      const productsBefore = await helper.productsInDb();
+      const productsToEdit = productsBefore[0];
+      const updatedProduct = {
+        name: productsToEdit.name,
+        barcode: productsToEdit.barcode,
+        priceInCentavos: productsToEdit.priceInCentavos + 23,
+        stock: productsToEdit.stock - 1,
+      };
+
+      await api
+        .put(`/api/products/${productsToEdit.id}`)
+        .send(updatedProduct)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+      const productsAfter = await helper.productsInDb();
+      assert.strictEqual(productsAfter[0].priceInCentavos, productsToEdit.priceInCentavos + 23);
+      assert.strictEqual(productsAfter[0].stock, productsToEdit.stock);
+    });
+
+    // test('updating a product with a missing ID')
   });
 });
 
