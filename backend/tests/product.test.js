@@ -21,7 +21,6 @@ before(async () => {
 
 describe('when there are initially some products saved', () => {
   beforeEach(async () => {
-    await connectDB();
     await Product.deleteMany({});
     await Product.insertMany(helper.initialProducts);
   });
