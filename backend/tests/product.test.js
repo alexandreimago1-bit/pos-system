@@ -235,6 +235,15 @@ describe('when there are initially some products saved', () => {
       assert.strictEqual(productsAfter.length, helper.initialProducts.length);
     });
 
+    test('a put request with no body returns 400', async () => {
+      await api
+        .put('/api/products')
+        .expect(400);
+
+      const productsAfter = await helper.productsInDb();
+      assert.strictEqual(productsAfter.length, helper.initialProducts.length);
+    });
+
     test('passing the same barcode, to update a product returns a 409', async () => {
       const productsBefore = await helper.productsInDb();
       const productToUpdate = productsBefore.find(p => p.barcode === 'TEST-BARCODE-1');

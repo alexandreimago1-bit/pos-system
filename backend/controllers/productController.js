@@ -1,69 +1,47 @@
 const Product = require('../models/Product');
 
-const getAllController = (req,res,next) => {
-  Product.find({})
-    .then(products => {
-      res.json(products);
-    })
-    .catch(error => {
-      next(error);
-    });
+const getAllController = async (req,res) => {
+  const products = await Product.find({});
+  res.json(products);
 };
 
-const getByIdController = (req, res, next) => {
-  Product
-    .findById(req.params.id)
-    .then(product => {
-      if (product) {
-        res.json(product);
-      }else {
-        res.status(404).json({ error: 'product not found' });
-      }
-    })
-    .catch( error => {
-      next(error);
-    });
+const getByIdController = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    res.json(product);
+  } else {
+    res.status(404).end();
+  }
 };
 
-const putController = (req,res,next) => {
+const putController = async (req,res) => {
   const { name, barcode, priceInCentavos } = req.body;
+  if (!name || !barcode || !priceInCentavos) {
+    return res.status(400).end();
+  }
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    return res.status(400).end();
+  }
+  product.name = name;
+  product.barcode = barcode;
+  product.priceInCentavos = priceInCentavos;
 
-  Product.findById(req.params.id)
-    .then(product => {
-      if (!product) {
-        return res.status(404).json({ error: 'product not found' });
-      }
-
-      product.name = name;
-      product.barcode = barcode;
-      product.priceInCentavos = priceInCentavos;
-
-      return product.save().then(updatedProduct => {
-        res.json(updatedProduct);
-      });
-    })
-    .catch(error => next(error));
+  const savedProduct = await product.save();
+  return res.json(savedProduct);
 };
 
-const deleteController = (req,res,next) => {
-  Product.findById(req.params.id)
-    .then((product) => {
-      if (!product) {
-        return res.status(404).json({ error: 'product not found' });
-      } 
-
-      product.isActive = false;
-      
-      return product.save().then(() => {
-        res.status(204).end();
-      });
-    })
-    .catch(error => next(error));
+const deleteController = async (req,res) => {
+  await Product.findByIdAndDelete(req.params.id);
+  res.status(204).end();
 };
 
-const postController = (req,res,next) => {
+const postController = async (req,res) => {
   const body = req.body;
-
+  if (!body) {
+    return res.status(400).end();
+  }
   const product = new Product({
     name: body.name,
     barcode: body.barcode, 
@@ -71,14 +49,8 @@ const postController = (req,res,next) => {
     stock: body.stock,
   });
 
-  product
-    .save()
-    .then(savedProduct => {
-      res.status(201).json(savedProduct);
-    })
-    .catch(error => {
-      next(error);
-    });
+  const savedProduct = await product.save();
+  res.status(201).json(savedProduct);
 };
 
 module.exports = { getAllController, getByIdController, putController,deleteController, postController };
