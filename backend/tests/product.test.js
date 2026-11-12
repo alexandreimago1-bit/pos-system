@@ -137,7 +137,40 @@ describe('when there are initially some products saved', () => {
       assert.strictEqual(productsAfter[0].stock, productsToEdit.stock);
     });
 
-    // test('updating a product with a missing ID')
+    test('updating a product with a non-existing ID returns a 404', async () => {
+      const validNonExistingID = await helper.nonExistingId();
+      const updatedProduct = {
+        name: 'Test Product 3',
+        barcode: 'TEST-BARCODE-3',
+        priceInCentavos: 1560,
+        stock: 20,
+      };
+      await api 
+        .put(`/api/products/${validNonExistingID}`)
+        .send(updatedProduct)
+        .expect(404);
+      const productsAfter = await helper.productsInDb();
+      assert.strictEqual(productsAfter.length, helper.initialProducts.length);
+    });
+
+    test('passing the same barcode, to update a product returns a 409', async () => {
+      const productsBefore = await helper.productsInDb();
+      const productToUpdate = productsBefore[0];
+      const updatedProduct = {
+        name: 'Test Product 1',
+        barcode: 'TEST-BARCODE-2',
+        priceInCentavos: 2400,
+        stock: 23,
+      };
+      await api
+        .put(`/api/products/${productToUpdate.id}`)
+        .send(updatedProduct)
+        .expect(409);
+      const productsAtEnd = await helper.productsInDb();
+      assert.strictEqual(productsAtEnd.length, productsBefore.length);
+      const productAfter = await Product.findById(productToUpdate.id);
+      assert.strictEqual(productAfter.barcode, productToUpdate.barcode);
+    });
   });
 });
 
