@@ -112,6 +112,88 @@ describe('when there are initially some products saved', () => {
         const response = await api.get('/api/products');
         assert.strictEqual(response.body.length, helper.initialProducts.length);
       });
+      test('a post request without a name returns 400', async () => {
+        const newProduct = {
+          barcode: 'Test-Barcode-3',
+          priceInCentavos: 2345,
+          stock: 20,
+        };
+
+        await api 
+          .post('/api/products')
+          .send(newProduct)
+          .expect(400);
+        const productsAfter = await helper.productsInDb();
+        assert.strictEqual(productsAfter.length,helper.initialProducts.length);
+
+      });
+      
+      test('a post request with no body returns 400', async () => {
+        await api
+          .post('/api/products')
+          .expect(400);
+
+        const productsAfter = await helper.productsInDb();
+        assert.strictEqual(productsAfter.length, helper.initialProducts.length);
+      });
+
+      test('a post request without a barcode returns 400', async () => {
+        const newProduct = {
+          name: 'Test-Product-3',
+          priceInCentavos: 2345,
+          stock: 20,
+        };
+
+        await api 
+          .post('/api/products')
+          .send(newProduct)
+          .expect(400);
+        const productsAfter = await helper.productsInDb();
+        assert.strictEqual(productsAfter.length,helper.initialProducts.length);
+
+      });
+
+      test('a post request without a price in Centavos returns 400', async () => {
+        const newProduct = {
+          name: 'Test-Product-3',
+          barcode: 'Test-Barcode-3',
+          stock: 20,
+        };
+
+        await api 
+          .post('/api/products')
+          .send(newProduct)
+          .expect(400);
+        const productsAfter = await helper.productsInDb();
+        assert.strictEqual(productsAfter.length,helper.initialProducts.length);
+
+      });
+
+      test("a price that's less than 0 or a decimal returns a 400", async () => {
+        const invalidPrices = [
+          { label: 'a negative price', value: -100 },
+          { label: 'a decimal price', value: 12.5 },
+        ];
+
+        for (const { label, value } of invalidPrices) {
+          test(`a post request with ${label} returns 400`, async () => {
+            const newProduct = {
+              name: 'Test-Product-3',
+              barcode: 'Test-Barcode-3',
+              priceInCentavos: value,
+              stock: 20,
+            };
+
+            await api
+              .post('/api/products')
+              .send(newProduct)
+              .expect(400);
+
+            const productsAfter = await helper.productsInDb();
+            assert.strictEqual(productsAfter.length, helper.initialProducts.length);
+          });
+        }
+      });
     });
   });
 
@@ -174,10 +256,10 @@ describe('when there are initially some products saved', () => {
     });
   });
 
-  describe('delete tests archives the product by switching isActive to false', () => {
+  describe('deleting products', () => {
 
 
-    test('a delete requests returning a 204 switches that products isActive property to false', async () => {
+    test('deleting an active product archives it and returns 204', async () => {
       const productsBefore = await helper.productsInDb();
       const productToArchive = productsBefore.find(p => p.barcode === 'TEST-BARCODE-1');
 
@@ -186,7 +268,7 @@ describe('when there are initially some products saved', () => {
         .expect(204);
 
       const productsAfter = await helper.productsInDb();
-      const productAfter = await Product.findById(productToArchive.id);
+      const productAfter = productsAfter.find(p => p.id === productToArchive.id);
       const ids = productsAfter.map(p => p.id);
 
       assert(ids.includes(productToArchive.id));
