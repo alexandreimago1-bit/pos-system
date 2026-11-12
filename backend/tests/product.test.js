@@ -173,6 +173,68 @@ describe('when there are initially some products saved', () => {
       assert.strictEqual(productAfter.barcode, productToUpdate.barcode);
     });
   });
+
+  describe('delete tests archives the product by switching isActive to false', () => {
+
+
+    test('a delete requests returning a 204 switches that products isActive property to false', async () => {
+      const productsBefore = await helper.productsInDb();
+      const productToArchive = productsBefore.find(p => p.barcode === 'TEST-BARCODE-1');
+
+      await api 
+        .delete(`/api/products/${productToArchive.id}`)
+        .expect(204);
+
+      const productsAfter = await helper.productsInDb();
+      const productAfter = await Product.findById(productToArchive.id);
+      const ids = productsAfter.map(p => p.id);
+
+      assert(ids.includes(productToArchive.id));
+      assert.strictEqual(productsBefore.length,productsAfter.length);
+      assert.strictEqual(productAfter.isActive, false);
+      assert.strictEqual(productAfter.name, productToArchive.name);
+      assert.strictEqual(productAfter.barcode, productToArchive.barcode);
+      assert.strictEqual(productAfter.priceInCentavos, productToArchive.priceInCentavos);
+      assert.strictEqual(productAfter.stock, productToArchive.stock);
+    });
+
+    test('checking for indempotency that returns 204' ,async () => {
+      const productsBefore = await helper.productsInDb();
+      const productsToDelete = productsBefore.find(p => p.barcode === 'TEST-BARCODE-1');
+
+      await api.delete(`/api/products/${productsToDelete.id}`).expect(204);
+
+      await api.delete(`/api/products/${productsToDelete.id}`).expect(204);
+
+      const productsAfter = await helper.productsInDb();
+      const productAfter = await Product.findById(productsToDelete.id);
+
+      assert.strictEqual(productAfter.isActive, false);
+      assert.strictEqual(productsBefore.length, productsAfter.length);
+    });
+
+    test('deleting a non-existing id returns a 404', async () => {
+      const validNonExistingId = await helper.nonExistingId();
+
+      await api
+        .delete(`/api/products/${validNonExistingId}`)
+        .expect(404);
+      
+      const productsAfter = await helper.productsInDb();
+      assert.strictEqual(productsAfter.length, helper.initialProducts.length);
+    });
+
+    test('deleting a malformed Id returns 400', async () => {
+      const invalidID = '123454565676';
+
+      await api
+        .delete(`/api/products/${invalidID}`)
+        .expect(400);
+
+      const productsAfter = await helper.productsInDb();
+      assert.strictEqual(productsAfter.length, helper.initialProducts.length);
+    });
+  });
 });
 
 
