@@ -116,7 +116,7 @@ describe('when there are initially some products saved', () => {
   });
 
   describe('updating an existing product', () => {
-    test('successfully updating an existing product price returns 200 OK but ignores stocks', async () => {
+    test('updates price with the same barcode returns 200 and ignores stock', async () => {
       const productsBefore = await helper.productsInDb();
       const productsToEdit = productsBefore[0];
       const updatedProduct = {
@@ -155,10 +155,11 @@ describe('when there are initially some products saved', () => {
 
     test('passing the same barcode, to update a product returns a 409', async () => {
       const productsBefore = await helper.productsInDb();
-      const productToUpdate = productsBefore[0];
+      const productToUpdate = productsBefore.find(p => p.barcode === 'TEST-BARCODE-1');
+      const otherProduct = productsBefore.find(p => p.barcode === 'TEST-BARCODE-2');
       const updatedProduct = {
-        name: 'Test Product 1',
-        barcode: 'TEST-BARCODE-2',
+        name: productToUpdate.name,
+        barcode: otherProduct.barcode,
         priceInCentavos: 2400,
         stock: 23,
       };
