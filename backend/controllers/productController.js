@@ -16,13 +16,15 @@ const getByIdController = async (req, res) => {
 };
 
 const putController = async (req,res) => {
-  const { name, barcode, priceInCentavos } = req.body;
-  if (!name || !barcode || !priceInCentavos) {
+
+  if (!req.body) {
     return res.status(400).end();
   }
+  const { name, barcode, priceInCentavos } = req.body;
+
   const product = await Product.findById(req.params.id);
   if (!product) {
-    return res.status(400).end();
+    return res.status(404).end();
   }
   product.name = name;
   product.barcode = barcode;
@@ -33,8 +35,15 @@ const putController = async (req,res) => {
 };
 
 const deleteController = async (req,res) => {
-  await Product.findByIdAndDelete(req.params.id);
-  res.status(204).end();
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    return res.status(404).end();
+  }
+
+  product.isActive = false;
+
+  await product.save();
+  return res.status(204).end();
 };
 
 const postController = async (req,res) => {

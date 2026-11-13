@@ -236,8 +236,10 @@ describe('when there are initially some products saved', () => {
     });
 
     test('a put request with no body returns 400', async () => {
+      const productsAtStart = await helper.productsInDb();
+      const productsToUpdate = productsAtStart.find(p => p.barcode === 'TEST-BARCODE-1');
       await api
-        .put('/api/products')
+        .put(`/api/products/${productsToUpdate.id}`)
         .expect(400);
 
       const productsAfter = await helper.productsInDb();
@@ -289,7 +291,7 @@ describe('when there are initially some products saved', () => {
       assert.strictEqual(productAfter.stock, productToArchive.stock);
     });
 
-    test('checking for indempotency that returns 204' ,async () => {
+    test('checking for idempotency that returns 204' ,async () => {
       const productsBefore = await helper.productsInDb();
       const productsToDelete = productsBefore.find(p => p.barcode === 'TEST-BARCODE-1');
 
