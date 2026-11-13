@@ -2,7 +2,9 @@
 
 ## 1. Overview
 
-The backend is the server-side application of a Retail POS & Inventory Management System designed to support product management, inventory tracking, and sales operations for small retail businesses. It is built using **Node.js, Express, and MongoDB with Mongoose**. The backend exposes REST API endpoints, handles application requests, enforces data validation, and manages communication with the database.
+The backend is the server-side application of a Retail POS & Inventory Management System designed to support product management, inventory tracking, and sales operations for small retail businesses.
+
+It is built using **Node.js, Express, MongoDB, and Mongoose**. The backend exposes REST API endpoints, handles application requests, enforces data validation, and manages communication with the database.
 
 ## 2. Folder Map
 
@@ -17,6 +19,16 @@ The backend is the server-side application of a Retail POS & Inventory Managemen
 ### Models
 
 `models/Product.js` defines the Product schema and exports the Mongoose model. It owns the product's data structure, schema-level validation, and database model behavior.
+
+The schema defines:
+
+- Required product name and barcode.
+- Non-negative integer price and stock values.
+- Default stock of `0`.
+- Default active status of `true`.
+- Automatic creation and update timestamps.
+
+The model also transforms documents when converted to JSON, exposing `id` instead of `_id` and removing the internal `__v` property.
 
 It does not handle HTTP requests, send responses, or decide how API errors are presented to clients.
 
@@ -34,15 +46,24 @@ It does not contain database operations, request-processing logic, or business r
 
 `controllers/productController.js` contains the handlers for product-related HTTP requests. Controllers receive request data, coordinate the necessary operations, and send HTTP responses.
 
-They do not define database schemas or own complex business rules. Errors are passed to the centralized error handler using `next(error)`.
+They use the Product model to retrieve, create, update, and archive product documents.
 
-**Why:** Separating request handling from business logic keeps controllers focused on HTTP concerns and makes application behavior easier to maintain.
+The controllers do not define database schemas or own complex business rules.
+
+**Why:** Separating request handling from data modeling keeps controllers focused on HTTP concerns and makes application behavior easier to maintain.
 
 ### Middleware
 
 `middleware/notFound.js` handles requests that do not match any registered route.
 
 `middleware/errorHandler.js` centralizes error handling and converts forwarded errors into standardized HTTP responses.
+
+The error handler currently handles:
+
+- Mongoose `CastError` — HTTP 400.
+- Mongoose `ValidationError` — HTTP 400.
+- Duplicate key error — HTTP 409.
+- Unexpected errors — HTTP 500.
 
 Neither middleware is responsible for implementing product-specific operations.
 
@@ -60,6 +81,13 @@ These files are for API verification and do not form part of the application's r
 
 `app.js` creates the Express application, registers middleware, mounts routers, and exports the configured application.
 
+The middleware is registered in the following order:
+
+1. `express.json()` parses incoming JSON request bodies.
+2. Product routes handle registered product endpoints.
+3. `unknownEndpoint` handles unmatched requests.
+4. `errorHandler` handles errors forwarded through Express.
+
 It does not establish the database connection or start the HTTP server.
 
 **Why:** The application can be imported independently of server startup, making its configuration easier to test and reuse.
@@ -67,6 +95,8 @@ It does not establish the database connection or start the HTTP server.
 ### Server Entry — `server.js`
 
 `server.js` imports the configured application, calls `connectDB()`, and starts the HTTP server after a successful database connection.
+
+If the database connection fails, the server does not start listening for incoming requests.
 
 It owns application startup, but does not define routes, controllers, or application middleware.
 
@@ -78,7 +108,8 @@ The backend separates application configuration from server startup.
 
 - `server.js` establishes the database connection and starts the HTTP server.
 - `app.js` creates and configures the Express application.
-- Incoming requests are processed by registered middleware before reaching their respective routes.
+- Incoming requests pass through registered middleware before reaching their matching routes.
+- Controllers coordinate model operations and send HTTP responses.
 
 ### Example: Creating a Product
 
@@ -88,34 +119,41 @@ The backend separates application configuration from server startup.
 HTTP Request
      |
      v
-app.js
+Express Application (app.js)
      |
      v
 express.json()
      |
      v
-productRoutes.js
+Product Router
      |
      v
-productController.js
+Product Controller
      |
      v
-Product.js (Mongoose Model)
+Mongoose Product Model
      |
      v
-MongoDB
+Schema Validation
+     |
+     v
+MongoDB Atlas
      |
      v
 HTTP Response
 ```
 
-1. Express receives the incoming HTTP request.
-2. JSON middleware parses the request body.
-3. The product router matches the endpoint and HTTP method.
-4. The corresponding controller handles the request.
-5. The controller uses the Product model to create the database record.
-6. Mongoose validates the data before persistence.
-7. The controller sends the appropriate HTTP response.
+1. The frontend sends an HTTP POST request containing product information as JSON.
+2. Express receives the request.
+3. `express.json()` parses the JSON request body and makes the data available through `req.body`.
+4. The product router matches the HTTP method and endpoint.
+5. The corresponding controller handles the request.
+6. The controller creates a Mongoose Product document in memory.
+7. The controller calls `.save()`, triggering Mongoose validation and attempting to persist the document.
+8. MongoDB Atlas stores the product if the operation succeeds.
+9. The controller sends a `201 Created` response containing the saved product as JSON.
+
+The Product model's JSON transformation ensures that the API response exposes `id` instead of MongoDB's internal `_id` and excludes `__v`.
 
 ### Error Flow
 
@@ -126,18 +164,63 @@ Request Processing
 An error occurs
        |
        v
-next(error)
+Express Error Handling
        |
        v
 errorHandler.js
        |
        v
-Standardized HTTP Error Response
+Appropriate HTTP Error Response
 ```
 
-Errors passed to `next(error)` are forwarded to the centralized error-handling middleware. Unknown endpoints are handled separately by `notFound.js`.
+Express 5 automatically forwards rejected promises from asynchronous route handlers and controllers to the error-handling middleware.
 
-## 6. Decisions and Trade-offs
+Errors from other middleware can also be forwarded through Express's error-handling mechanism.
+
+The centralized error handler determines the appropriate HTTP status and response based on the error.
+
+Unknown endpoints follow a separate path through `notFound.js`, which returns a `404 Not Found` response.
+
+## 4. Testing Strategy
+
+The backend uses Node.js's built-in test runner, `node:test`, alongside Supertest for HTTP integration testing.
+
+The integration tests exercise the API through HTTP requests and verify the behavior of the controllers, models, middleware, and database interactions.
+
+### Test Database
+
+A separate MongoDB test database is used to prevent integration tests from modifying development data.
+
+The test setup:
+
+- Establishes a database connection before testing.
+- Verifies that the active database is the test database.
+- Clears and reseeds the Product collection before each test.
+- Closes the database connection after the test suite finishes.
+
+### Product API Test Coverage
+
+The integration suite currently contains 22 passing tests covering:
+
+- Retrieving all products.
+- Retrieving a product by ID.
+- Handling missing and malformed IDs.
+- Creating products successfully.
+- Handling missing fields and empty request bodies.
+- Rejecting negative and decimal price values.
+- Rejecting invalid stock values.
+- Handling duplicate barcodes.
+- Updating product information.
+- Preventing stock changes through the product update endpoint.
+- Handling missing products during updates.
+- Archiving products instead of physically deleting them.
+- Verifying archive idempotency.
+
+**Current result:** 22 passing tests, 0 failing tests.
+
+**Why:** Integration testing verifies that the different backend components work together and that API behavior remains consistent when changes are introduced.
+
+## 5. Decisions and Trade-offs
 
 ### Separate `app.js` and `server.js`
 
@@ -171,7 +254,7 @@ Errors passed to `next(error)` are forwarded to the centralized error-handling m
 
 **Trade-off:** Requires a separate inventory workflow and endpoint implementation.
 
-## 8. Not Built Yet
+## 6. Not Built Yet
 
 The following capabilities are part of the planned MVP but have not yet been implemented.
 
@@ -183,7 +266,6 @@ The following capabilities are part of the planned MVP but have not yet been imp
 | User authentication      | Not implemented |
 | Role-based authorization | Not implemented |
 | Dashboard and reporting  | Not implemented |
-| Automated test suite     | Not implemented |
 
 These are intentional development gaps, not existing backend capabilities.
 
