@@ -329,31 +329,6 @@ describe('when there are initially some products saved', () => {
     });
   });
 
-  test('should roll back database changes when a transaction is aborted', async () => {
-    const session = await mongoose.startSession();
-    try{
-      const productsAtStart = await helper.productsInDb();
-      const product = productsAtStart[0];
-
-      session.startTransaction();
-
-      await Product.updateOne(
-        { _id: product.id },
-        { $inc: { stock: 5 } },
-        { session },
-
-      );
-
-      throw new Error('Simulated movement creation failure');
-    }catch (error) {
-      await session.abortTransaction();
-    } finally {
-      await session.endSession();
-    }
-
-    const productsAfter = await helper.productsInDb();
-    assert.strictEqual(productsAfter[0].stock, 10);
-  });
 });
 
 

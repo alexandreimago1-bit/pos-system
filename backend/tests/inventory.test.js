@@ -34,6 +34,7 @@ test('should roll back database changes when a transaction is aborted', async ()
     await Product.updateOne(
       { _id: product.id },
       { $inc: { stock: 5 } },
+      { session },
     );
 
     throw new Error('Simulated movement creation failure');
