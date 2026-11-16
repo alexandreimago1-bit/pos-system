@@ -23,19 +23,22 @@ beforeEach(async () => {
   await Product.insertMany(helper.initialProducts);
 });
 
-test('should roll back database changes when a transaction is aborted', async () => {
+test('an aborted transaction rolls back its writes', async () => {
   const session = await mongoose.startSession();
   const productsAtStart = await helper.productsInDb();
   const product = productsAtStart[0];
+  let count;
   try{
 
     session.startTransaction();
 
-    await Product.updateOne(
+    const response = await Product.updateOne(
       { _id: product.id },
       { $inc: { stock: 5 } },
       { session },
     );
+
+    count = response.modifiedCount;
 
     throw new Error('Simulated movement creation failure');
   }catch (error) {
@@ -46,6 +49,32 @@ test('should roll back database changes when a transaction is aborted', async ()
 
   const productsAfter = await helper.productsInDb();
   assert.strictEqual(productsAfter[0].stock, productsAtStart[0].stock);
+  assert.strictEqual(count, 1);
+});
+
+test('a committed transaction keeps its writes', async () => {
+  const session = await mongoose.startSession();
+  const productAtStart = await helper.productsInDb();
+  const product = productAtStart[0];
+  let count;
+  try{
+    session.startTransaction();
+    const response = await Product.updateOne(
+      { _id: product.id },
+      { $inc: { stock: 5 } },
+      { session },
+    );
+    count = response.modifiedCount;
+
+    await session.commitTransaction();
+  }catch (error) {
+    await session.abortTransaction();
+  } finally{
+    await session.endSession();
+  }
+  assert.strictEqual(count, 1);
+  const productsAfter = await helper.productsInDb();
+  assert.strictEqual(productsAfter[0].stock, productAtStart[0].stock + 5);
 });
 
 after(async () => {
