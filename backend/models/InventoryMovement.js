@@ -15,6 +15,19 @@ const InventorySchema = new mongoose.Schema(
     quantity: {
       type: Number,
       required: true,
+      validate: {
+        validator: function (value) {
+          if (!Number.isInteger(value) || value === 0) {
+            return false;
+          }
+
+          if (this.type === 'restock') return value > 0;
+          if (this.type === 'damage') return value < 0;
+
+          return true;
+        },
+        message: 'Quantity does not match movement type',
+      }, 
     },
     stockBefore: {
       type: Number,
