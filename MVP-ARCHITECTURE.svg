@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title description">
+  <title id="title">Retail POS MVP target architecture and implementation status</title>
+  <desc id="description">A planned React and Express retail point-of-sale architecture, showing the existing product API, inventory work in progress, planned sales and reporting, MongoDB persistence, and required inventory integrity and testing practices.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-light" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b9bb0"/>
+    </marker>
+    <style>
+      text { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #172033; }
+      .title { font-size: 30px; font-weight: 750; letter-spacing: -0.5px; }
+      .subtitle { font-size: 14px; fill: #536176; }
+      .section { font-size: 16px; font-weight: 700; }
+      .label { font-size: 13px; font-weight: 650; }
+      .body { font-size: 12px; fill: #445269; }
+      .small { font-size: 11px; fill: #5b687c; }
+      .tiny { font-size: 10px; fill: #5b687c; }
+      .card { fill: #ffffff; stroke: #d7dfeb; stroke-width: 1.4; }
+      .soft { fill: #f9fbfe; stroke: #d7dfeb; stroke-width: 1.2; }
+      .api-frame { fill: #f4f7fc; stroke: #c9d5e6; stroke-width: 1.5; }
+      .line { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+      .planned-line { fill: none; stroke: #8b9bb0; stroke-width: 2; stroke-dasharray: 6 6; marker-end: url(#arrow-light); }
+      .done-pill { fill: #e4f5ec; }
+      .done-text { fill: #167447; font-size: 10px; font-weight: 750; letter-spacing: 0.3px; }
+      .progress-pill { fill: #fff1d6; }
+      .progress-text { fill: #9a5c00; font-size: 10px; font-weight: 750; letter-spacing: 0.3px; }
+      .planned-pill { fill: #e9edff; }
+      .planned-text { fill: #4a56a8; font-size: 10px; font-weight: 750; letter-spacing: 0.3px; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1120" fill="#f3f6fb"/>
+
+  <text x="60" y="58" class="title">Retail POS MVP | Target Architecture</text>
+  <text x="60" y="86" class="subtitle">A data-integrity-first system for small retailers. Status labels distinguish the working product API from planned MVP capabilities.</text>
+
+  <g transform="translate(60 108)">
+    <rect width="94" height="25" rx="12" class="done-pill"/>
+    <text x="47" y="17" text-anchor="middle" class="done-text">IMPLEMENTED</text>
+    <rect x="106" width="103" height="25" rx="12" class="progress-pill"/>
+    <text x="157" y="17" text-anchor="middle" class="progress-text">IN PROGRESS</text>
+    <rect x="221" width="78" height="25" rx="12" class="planned-pill"/>
+    <text x="260" y="17" text-anchor="middle" class="planned-text">PLANNED</text>
+    <path d="M342 12 H390" class="line"/>
+    <text x="402" y="17" class="small">existing flow</text>
+    <path d="M502 12 H550" class="planned-line"/>
+    <text x="562" y="17" class="small">target / not yet wired</text>
+  </g>
+
+  <!-- Primary request and data path -->
+  <rect x="60" y="160" width="180" height="410" rx="16" class="card"/>
+  <text x="80" y="194" class="section">Store team</text>
+  <rect x="80" y="216" width="140" height="70" rx="11" fill="#f7f9fd" stroke="#e1e7f0"/>
+  <text x="96" y="244" class="label">Cashier</text>
+  <text x="96" y="265" class="small">Sell and manage items</text>
+  <rect x="80" y="300" width="140" height="70" rx="11" fill="#f7f9fd" stroke="#e1e7f0"/>
+  <text x="96" y="328" class="label">Store manager</text>
+  <text x="96" y="349" class="small">Products and stock</text>
+  <text x="80" y="414" class="small">Uses the POS to:</text>
+  <text x="80" y="440" class="body">• find products</text>
+  <text x="80" y="463" class="body">• record stock changes</text>
+  <text x="80" y="486" class="body">• complete checkout</text>
+  <text x="80" y="539" class="tiny">User interface is not built yet.</text>
+
+  <rect x="280" y="160" width="255" height="410" rx="16" class="card"/>
+  <text x="300" y="194" class="section">POS web app</text>
+  <rect x="423" y="176" width="91" height="22" rx="11" class="planned-pill"/>
+  <text x="468" y="191" text-anchor="middle" class="planned-text">PLANNED</text>
+  <text x="300" y="225" class="label">React client</text>
+  <text x="300" y="250" class="body">Product catalog and search</text>
+  <text x="300" y="274" class="body">Inventory operations</text>
+  <text x="300" y="298" class="body">Checkout and sales view</text>
+  <text x="300" y="322" class="body">Low-stock and reporting views</text>
+  <line x1="300" y1="348" x2="515" y2="348" stroke="#e5eaf2"/>
+  <text x="300" y="378" class="label">Calls the API over HTTP</text>
+  <text x="300" y="403" class="small">The repository currently has</text>
+  <text x="300" y="421" class="small">no frontend implementation.</text>
+  <rect x="300" y="463" width="215" height="72" rx="10" fill="#f6f7ff" stroke="#dfe3fb"/>
+  <text x="315" y="489" class="small">Future UI only; keep stock</text>
+  <text x="315" y="507" class="small">changes on dedicated inventory</text>
+  <text x="315" y="525" class="small">workflows, not product edits.</text>
+
+  <rect x="590" y="150" width="650" height="440" rx="18" class="api-frame"/>
+  <text x="612" y="185" class="section">Node.js + Express 5 API</text>
+  <rect x="1092" y="166" width="126" height="23" rx="11" class="done-pill"/>
+  <text x="1155" y="182" text-anchor="middle" class="done-text">BACKEND EXISTS</text>
+
+  <rect x="610" y="205" width="610" height="66" rx="11" class="card"/>
+  <text x="628" y="230" class="label">Application middleware</text>
+  <text x="628" y="251" class="small">JSON parsing · not-found handling · centralized errors</text>
+  <rect x="1088" y="219" width="111" height="22" rx="11" class="done-pill"/>
+  <text x="1143" y="234" text-anchor="middle" class="done-text">IMPLEMENTED</text>
+
+  <rect x="610" y="292" width="174" height="240" rx="12" class="card"/>
+  <text x="628" y="322" class="label">Routes</text>
+  <rect x="628" y="340" width="82" height="21" rx="10" class="done-pill"/>
+  <text x="669" y="355" text-anchor="middle" class="done-text">PRODUCTS</text>
+  <text x="628" y="385" class="body">Product CRUD and</text>
+  <text x="628" y="403" class="body">archive endpoints</text>
+  <text x="628" y="440" class="small">Inventory and sales</text>
+  <text x="628" y="458" class="small">routes are not mounted.</text>
+  <path d="M784 412 H798" class="line"/>
+
+  <rect x="800" y="292" width="174" height="240" rx="12" class="card"/>
+  <text x="818" y="322" class="label">Controllers</text>
+  <rect x="818" y="340" width="84" height="21" rx="10" class="done-pill"/>
+  <text x="860" y="355" text-anchor="middle" class="done-text">PRODUCTS</text>
+  <text x="818" y="385" class="body">Handle HTTP requests</text>
+  <text x="818" y="403" class="body">and responses</text>
+  <text x="818" y="440" class="small">Keep business workflows</text>
+  <text x="818" y="458" class="small">out of HTTP concerns.</text>
+  <path d="M974 412 H988" class="planned-line"/>
+
+  <rect x="990" y="292" width="230" height="240" rx="12" class="card"/>
+  <text x="1008" y="322" class="label">Business services</text>
+  <text x="1008" y="350" class="tiny">TARGET BOUNDARY</text>
+  <line x1="1008" y1="361" x2="1200" y2="361" stroke="#e5eaf2"/>
+  <text x="1008" y="387" class="body">Products API</text>
+  <rect x="1117" y="371" width="82" height="20" rx="10" class="done-pill"/>
+  <text x="1158" y="385" text-anchor="middle" class="done-text">DIRECT NOW</text>
+  <text x="1008" y="420" class="body">Inventory</text>
+  <rect x="1117" y="404" width="82" height="20" rx="10" class="progress-pill"/>
+  <text x="1158" y="418" text-anchor="middle" class="progress-text">IN PROGRESS</text>
+  <text x="1008" y="453" class="body">Sales / reports</text>
+  <rect x="1117" y="437" width="82" height="20" rx="10" class="planned-pill"/>
+  <text x="1158" y="451" text-anchor="middle" class="planned-text">PLANNED</text>
+  <text x="1008" y="482" class="tiny">Restock · damage · adjustment · history</text>
+  <text x="1008" y="499" class="tiny">Low-stock default threshold: 10</text>
+  <text x="1008" y="516" class="tiny">Services own workflows, not HTTP.</text>
+
+  <text x="612" y="559" class="tiny">Product requests currently go route → controller → Product model. The service path is the target for inventory and future workflows.</text>
+
+  <rect x="1275" y="150" width="265" height="440" rx="18" class="card"/>
+  <text x="1295" y="185" class="section">Persistence</text>
+  <rect x="1430" y="166" width="90" height="23" rx="11" class="done-pill"/>
+  <text x="1475" y="182" text-anchor="middle" class="done-text">MONGODB</text>
+  <rect x="1295" y="205" width="225" height="232" rx="12" fill="#f9fbfe" stroke="#d7dfeb"/>
+  <text x="1313" y="234" class="label">Mongoose models</text>
+  <text x="1313" y="265" class="body">Product</text>
+  <rect x="1425" y="249" width="78" height="20" rx="10" class="done-pill"/>
+  <text x="1464" y="263" text-anchor="middle" class="done-text">IMPLEMENTED</text>
+  <text x="1313" y="301" class="body">Movement schema</text>
+  <rect x="1425" y="285" width="78" height="20" rx="10" class="progress-pill"/>
+  <text x="1464" y="299" text-anchor="middle" class="progress-text">STARTED</text>
+  <text x="1313" y="337" class="body">Sale / User</text>
+  <rect x="1425" y="321" width="78" height="20" rx="10" class="planned-pill"/>
+  <text x="1464" y="335" text-anchor="middle" class="planned-text">PLANNED</text>
+  <text x="1313" y="380" class="small">Schema-level data integrity</text>
+  <text x="1313" y="398" class="small">and timestamps where needed</text>
+  <path d="M1407 437 V455" class="line"/>
+  <rect x="1295" y="461" width="225" height="102" rx="12" fill="#eef5ff" stroke="#cddcf2"/>
+  <text x="1313" y="490" class="label">MongoDB Atlas</text>
+  <text x="1313" y="514" class="small">Development database</text>
+  <text x="1313" y="534" class="small">Separate integration DB: pos_test</text>
+
+  <path d="M240 366 H280" class="planned-line"/>
+  <path d="M535 366 H590" class="planned-line"/>
+  <path d="M1240 412 H1275" class="line"/>
+
+  <!-- Integrity and operational concerns -->
+  <rect x="60" y="620" width="730" height="296" rx="16" class="card"/>
+  <text x="84" y="657" class="section">Inventory integrity | core business rules</text>
+  <rect x="84" y="677" width="682" height="48" rx="10" fill="#fff8e9" stroke="#f1dfb8"/>
+  <text x="102" y="698" class="label">Atomic stock + movement writes</text>
+  <text x="102" y="715" class="small">The stock change and its audit record commit or roll back together.</text>
+  <rect x="84" y="738" width="326" height="62" rx="10" class="soft"/>
+  <text x="101" y="762" class="label">Concurrency safety</text>
+  <text x="101" y="782" class="small">Use conditional atomic stock updates.</text>
+  <rect x="424" y="738" width="342" height="62" rx="10" class="soft"/>
+  <text x="441" y="762" class="label">Traceable movements</text>
+  <text x="441" y="782" class="small">Nonzero integer delta; after = before + delta.</text>
+  <rect x="84" y="813" width="326" height="74" rx="10" class="soft"/>
+  <text x="101" y="838" class="label">Separate responsibilities</text>
+  <text x="101" y="858" class="small">Product edits never change stock.</text>
+  <text x="101" y="875" class="small">Archive products; do not physically delete.</text>
+  <rect x="424" y="813" width="342" height="74" rx="10" class="soft"/>
+  <text x="441" y="838" class="label">Movement rules</text>
+  <text x="441" y="858" class="small">Zero diff: no movement. Archived restock: blocked.</text>
+  <text x="441" y="875" class="small">Archived damage and adjustment: allowed.</text>
+
+  <rect x="810" y="620" width="730" height="296" rx="16" class="card"/>
+  <text x="834" y="657" class="section">Runtime, configuration, and verification</text>
+  <rect x="834" y="677" width="328" height="210" rx="11" class="soft"/>
+  <text x="852" y="706" class="label">Startup and configuration</text>
+  <text x="852" y="738" class="body">config/env.js</text>
+  <text x="986" y="738" class="small">central environment access</text>
+  <text x="852" y="766" class="body">config/db.js</text>
+  <text x="986" y="766" class="small">database connection</text>
+  <text x="852" y="794" class="body">app.js</text>
+  <text x="986" y="794" class="small">Express app setup</text>
+  <text x="852" y="822" class="body">server.js</text>
+  <text x="986" y="822" class="small">connect, then listen</text>
+  <rect x="852" y="845" width="102" height="22" rx="11" class="done-pill"/>
+  <text x="903" y="860" text-anchor="middle" class="done-text">IMPLEMENTED</text>
+
+  <rect x="1178" y="677" width="338" height="210" rx="11" class="soft"/>
+  <text x="1196" y="706" class="label">Automated tests</text>
+  <text x="1196" y="738" class="body">node:test + Supertest</text>
+  <text x="1196" y="764" class="small">HTTP behavior and database integration</text>
+  <text x="1196" y="794" class="body">Dedicated pos_test database</text>
+  <text x="1196" y="820" class="small">Verify test DB before destructive setup.</text>
+  <text x="1196" y="850" class="small">Inventory: transaction, rollback, and</text>
+  <text x="1196" y="868" class="small">concurrency coverage is still in progress.</text>
+
+  <rect x="60" y="944" width="1480" height="128" rx="16" fill="#eaf0f9" stroke="#d4deec"/>
+  <text x="84" y="978" class="section">MVP development status</text>
+  <line x1="555" y1="993" x2="555" y2="1051" stroke="#d0d9e7"/>
+  <line x1="1060" y1="993" x2="1060" y2="1051" stroke="#d0d9e7"/>
+  <rect x="84" y="994" width="58" height="21" rx="10" class="done-pill"/>
+  <text x="113" y="1009" text-anchor="middle" class="done-text">DONE</text>
+  <text x="153" y="1009" class="label">Phase 3: product management</text>
+  <text x="84" y="1037" class="small">CRUD, archive behavior, app/server separation, test database.</text>
+  <rect x="580" y="994" width="103" height="21" rx="10" class="progress-pill"/>
+  <text x="631" y="1009" text-anchor="middle" class="progress-text">IN PROGRESS</text>
+  <text x="694" y="1009" class="label">Phase 4: inventory management</text>
+  <text x="580" y="1037" class="small">Transactions → movement validation → stock workflows → history and monitoring.</text>
+  <rect x="1085" y="994" width="77" height="21" rx="10" class="planned-pill"/>
+  <text x="1123" y="1009" text-anchor="middle" class="planned-text">PLANNED</text>
+  <text x="1173" y="1009" class="label">Other MVP capabilities</text>
+  <text x="1085" y="1037" class="small">Sales/checkout, authentication/roles, dashboard/reporting.</text>
+  <text x="84" y="1060" class="tiny">Sales, authentication, and reporting are goals, not features currently implemented in this repository.</text>
+</svg>

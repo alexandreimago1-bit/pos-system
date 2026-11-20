@@ -1,14 +1,14 @@
-const app = require('../app');
-const supertest = require('supertest');
+// const app = require('../app');
+// const supertest = require('supertest');
 const Product = require('../models/Product');
 const mongoose = require('mongoose');
-const { test, before, after, beforeEach, describe } = require('node:test');
+const { test, before, after, beforeEach } = require('node:test');
 const connectDB = require('../config/db');
 const assert = require('node:assert');
 const helper = require('./test_helper');
 
 
-const api = supertest(app);
+// const api = supertest(app);
 
 
 before(async () => {
@@ -28,6 +28,7 @@ test('an aborted transaction rolls back its writes', async () => {
   const productsAtStart = await helper.productsInDb();
   const product = productsAtStart[0];
   let count;
+  let caughtError;
   try{
 
     session.startTransaction();
@@ -38,16 +39,24 @@ test('an aborted transaction rolls back its writes', async () => {
       { session },
     );
 
+    const productInsideTransaction = await Product.findById(product.id).session(session);
+    assert.strictEqual(productInsideTransaction.stock, product.stock + 5);
     count = response.modifiedCount;
 
     throw new Error('Simulated movement creation failure');
   }catch (error) {
     await session.abortTransaction();
+    if (error.message === 'Simulated movement creation failure') {
+      caughtError = error;
+    } else {
+      throw error;
+    }
   } finally {
     await session.endSession();
   }
 
   const productsAfter = await helper.productsInDb();
+  assert.strictEqual(caughtError.message, 'Simulated movement creation failure');
   assert.strictEqual(productsAfter[0].stock, productsAtStart[0].stock);
   assert.strictEqual(count, 1);
 });

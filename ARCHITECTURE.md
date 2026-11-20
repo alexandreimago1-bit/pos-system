@@ -6,6 +6,10 @@ The backend is the server-side application of a Retail POS & Inventory Managemen
 
 It is built using **Node.js, Express, MongoDB, and Mongoose**. The backend exposes REST API endpoints, handles application requests, enforces data validation, and manages communication with the database.
 
+The [MVP architecture diagram](./MVP-ARCHITECTURE.svg) shows the intended system boundaries alongside implementation status. Dashed paths and planned labels are not implemented features.
+
+![Retail POS MVP target architecture](./MVP-ARCHITECTURE.svg)
+
 ## 2. Folder Map
 
 ### Config
