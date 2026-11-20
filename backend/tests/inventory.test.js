@@ -56,6 +56,7 @@ test('an aborted transaction rolls back its writes', async () => {
   }
 
   const productsAfter = await helper.productsInDb();
+  assert.ok(caughtError instanceof Error, 'Expected the simulated movement failure to be captured');
   assert.strictEqual(caughtError.message, 'Simulated movement creation failure');
   assert.strictEqual(productsAfter[0].stock, productsAtStart[0].stock);
   assert.strictEqual(count, 1);
@@ -78,6 +79,7 @@ test('a committed transaction keeps its writes', async () => {
     await session.commitTransaction();
   }catch (error) {
     await session.abortTransaction();
+    throw error;
   } finally{
     await session.endSession();
   }
