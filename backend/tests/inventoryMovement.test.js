@@ -136,3 +136,67 @@ describe('stock arithmetic validation', () => {
     });
   });
 });
+
+test('rejecting a negative stockBefore', async () => {
+  const movement = new InventoryMovement({
+    product: new mongoose.Types.ObjectId(),
+    type: 'damage',
+    quantity: -3,
+    stockBefore: -10,
+    stockAfter: 10,
+    reason: 'Damaged goods removed from inventory',
+  });
+
+  await assert.rejects(movement.validate(), (error) => {
+    assert.ok(error.errors.stockBefore);
+    return true;
+  });
+});
+
+test('rejecting a decimal stockBefore', async () => {
+  const movement = new InventoryMovement({
+    product: new mongoose.Types.ObjectId(),
+    type: 'damage',
+    quantity: -3,
+    stockBefore: 10.5,
+    stockAfter: 10,
+    reason: 'Damaged goods removed from inventory',
+  });
+
+  await assert.rejects(movement.validate(), (error) => {
+    assert.ok(error.errors.stockBefore);
+    return true;
+  });
+});
+
+test('rejecting a negative stockAfter', async () => {
+  const movement = new InventoryMovement({
+    product: new mongoose.Types.ObjectId(),
+    type: 'damage',
+    quantity: -3,
+    stockBefore: 10,
+    stockAfter: -10,
+    reason: 'Damaged goods removed from inventory',
+  });
+
+  await assert.rejects(movement.validate(), (error) => {
+    assert.ok(error.errors.stockAfter);
+    return true;
+  });
+});
+
+test('rejecting a decimal stockAfter', async () => {
+  const movement = new InventoryMovement({
+    product: new mongoose.Types.ObjectId(),
+    type: 'damage',
+    quantity: -3,
+    stockBefore: 10,
+    stockAfter: 10.111111,
+    reason: 'Damaged goods removed from inventory',
+  });
+
+  await assert.rejects(movement.validate(), (error) => {
+    assert.ok(error.errors.stockAfter);
+    return true;
+  });
+});
