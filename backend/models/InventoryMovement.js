@@ -55,9 +55,10 @@ const InventorySchema = new mongoose.Schema(
     reason: {
       type: String,
       required: true,
-      // trim: true,
+      trim: true,
     },
   },
+  { timestamps: true },
 );
 
 InventorySchema.set('toJSON', {
@@ -68,4 +69,4 @@ InventorySchema.set('toJSON', {
   },
 });
 
-module.exports = mongoose.model('Inventory', InventorySchema);
+module.exports = mongoose.model('InventoryMovement', InventorySchema);

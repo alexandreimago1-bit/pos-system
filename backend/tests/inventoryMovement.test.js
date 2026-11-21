@@ -3,6 +3,12 @@ const assert = require('node:assert');
 const mongoose = require('mongoose');
 const InventoryMovement = require('../models/InventoryMovement');
 
+describe('model registration',  () => {
+  test('uses the InventoryMovement model name', async () => {
+    assert.strictEqual(InventoryMovement.modelName, 'InventoryMovement');
+  });
+});
+
 describe('movement fields', () => {
   test('a valid movement passes validation', async () => {
     const movement = new InventoryMovement({
