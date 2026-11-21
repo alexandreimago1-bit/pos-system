@@ -31,6 +31,51 @@ describe('movement fields', () => {
       return true;
     });
   });
+
+  test('movement that has a reason with white spaces will automatically trim', async () => {
+    const movement = new InventoryMovement({
+      product: new mongoose.Types.ObjectId(),
+      type: 'restock',
+      quantity: 5,
+      stockBefore: 10,
+      stockAfter: 15,
+      reason: ' Supplier delivery ',
+    });
+
+    assert.strictEqual(movement.reason, 'Supplier delivery');
+  });
+
+  test('a whitespace-only reason is rejected', async () => {
+    const movement = new InventoryMovement({
+      product: new mongoose.Types.ObjectId(),
+      type: 'restock',
+      quantity: 5,
+      stockBefore: 10,
+      stockAfter: 15,
+      reason: '  ',
+    });
+
+    await assert.rejects(movement.validate(), (error) => {
+      assert.ok(error.errors.reason);
+      return true;
+    });
+  });
+
+  test('rejecting an empty inventoryMovement', async () => {
+    const movement = new InventoryMovement({
+
+    });
+
+    await assert.rejects(movement.validate(), (error) => {
+      assert.ok(error.errors.product);
+      assert.ok(error.errors.type);
+      assert.ok(error.errors.quantity);
+      assert.ok(error.errors.stockBefore);
+      assert.ok(error.errors.stockAfter);
+      assert.ok(error.errors.reason);
+      return true;
+    });
+  });
 });
 
 describe('movement quantity validation', () => {
@@ -73,6 +118,32 @@ describe('movement quantity validation', () => {
       stockAfter: 7,
       reason: 'sale',
     });
+    await assert.doesNotReject(movement.validate());
+  });
+
+  test('a positive adjustment is valid', async () => {
+    const movement = new InventoryMovement({
+      product: new mongoose.Types.ObjectId(),
+      type: 'adjustment',
+      quantity: 3,
+      stockBefore: 10,
+      stockAfter: 13,
+      reason: 'Physical count found extra stock',
+    });
+
+    await assert.doesNotReject(movement.validate());
+  });
+
+  test('a valid negative adjustment', async () => {
+    const movement = new InventoryMovement({
+      product: new mongoose.Types.ObjectId(),
+      type: 'adjustment',
+      quantity: -3,
+      stockBefore: 10,
+      stockAfter: 7,
+      reason: 'Physical count found extra stock',
+    });
+
     await assert.doesNotReject(movement.validate());
   });
 });
@@ -141,10 +212,10 @@ describe('stock value validation', () => {
   test('rejecting a negative stockBefore', async () => {
     const movement = new InventoryMovement({
       product: new mongoose.Types.ObjectId(),
-      type: 'damage',
-      quantity: -3,
+      type: 'restock',
+      quantity: 15,
       stockBefore: -10,
-      stockAfter: 10,
+      stockAfter: 5,
       reason: 'Damaged goods removed from inventory',
     });
 
@@ -202,3 +273,21 @@ describe('stock value validation', () => {
     });
   });
 });
+
+describe('movement type validation', async () => {
+  test('rejecting an invalid movement type', async () => {
+    const movement = new InventoryMovement({
+      product: new mongoose.Types.ObjectId(),
+      type: 'transfer',
+      quantity: 3,
+      stockBefore: 10,
+      stockAfter: 13,
+      reason: 'Damaged goods removed from inventory',
+    });
+    await assert.rejects(movement.validate(), (error) => {
+      assert.ok(error.errors.type);
+      return true;
+    });
+  });
+});
+
