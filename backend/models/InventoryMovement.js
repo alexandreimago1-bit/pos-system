@@ -32,10 +32,25 @@ const InventorySchema = new mongoose.Schema(
     stockBefore: {
       type: Number,
       required: true,
+      min: 0,
+      validate: {
+        validator: Number.isInteger,
+        message: 'Value must be a whole number',
+      },
     },
     stockAfter: {
       type: Number,
       required: true,
+      min: 0,
+      validate: {
+        validator: function (value) {
+          if (!Number.isInteger(value) || value < 0) {
+            return false;
+          }
+          return value === this.stockBefore + this.quantity;
+        },
+        message: 'stock after must be a non-negative whole number matching stockBefore and  quantity',
+      },
     },
     reason: {
       type: String,
